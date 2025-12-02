@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { imageUpload } from "../../utils";
 import useAuth from "../../hooks/useAuth";
+import axios from "axios";
 
 const AddPlantForm = () => {
 
@@ -32,9 +33,12 @@ const AddPlantForm = () => {
           email: user?.email,
         }
       }
+      const {data} =await axios.post(`${import.meta.env.VITE_API_URL}/plants`, plantData)
+      console.log(data);
+      
 
 
-      console.table(plantData);
+      
     }
     
 
