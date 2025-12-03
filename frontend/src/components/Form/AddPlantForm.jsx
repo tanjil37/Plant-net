@@ -3,7 +3,6 @@ import { imageUpload } from "../../utils";
 import useAuth from "../../hooks/useAuth";
 import axios from "axios";
 import { useMutation } from "@tanstack/react-query";
-import { data } from "react-router";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../Shared/LoadingSpinner";
 import ErrorPage from "../../pages/ErrorPage";

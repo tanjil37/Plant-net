@@ -4,7 +4,7 @@ import useAuth from "../../hooks/useAuth";
 import { toast } from "react-hot-toast";
 import { TbFidgetSpinner } from "react-icons/tb";
 import { useForm } from "react-hook-form";
-import axios from 'axios'
+// import axios from 'axios'
 import { imageUpload } from "../../utils";
 const SignUp = () => {
   const { createUser, updateUserProfile, signInWithGoogle, loading } =
@@ -16,7 +16,7 @@ const SignUp = () => {
   const {
     register,
     handleSubmit,
-    watch,
+    
     formState: { errors },
   } = useForm();
 
@@ -41,8 +41,10 @@ const SignUp = () => {
 
     const imageURL = await imageUpload(imageFile)
 
-    
+      // const cloudinaryImageUrl = await imageUploadCloudinary(imageFile)
+      // console.log('Cloudinary Response ----->', cloudinaryImageUrl)
 
+      
 
       //2. User Registration
       const result = await createUser(email, password);
