@@ -56,6 +56,7 @@ async function run() {
 
     const db = client.db('plantsDB')
     const plantsCollection = db.collection('plants')
+    const ordersCollection = db.collection('orders')
 
     //save a plant data in db
     app.post('/plants', async (req, res) =>{
@@ -110,7 +111,53 @@ async function run() {
       res.send({ url: session.url })
     })
 
-    
+
+     app.post('/payment-success', async (req, res) => {
+      const { sessionId } = req.body
+      const session = await stripe.checkout.sessions.retrieve(sessionId)
+      const plant = await plantsCollection.findOne({
+        _id: new ObjectId(session.metadata.plantId),
+      })
+      const order = await ordersCollection.findOne({
+        transactionId: session.payment_intent,
+      })
+
+      if (session.status === 'complete' && plant && !order) {
+        // save order data in db
+        const orderInfo = {
+          plantId: session.metadata.plantId,
+          transactionId: session.payment_intent,
+          customer: session.metadata.customer,
+          status: 'pending',
+          seller: plant.seller,
+          name: plant.name,
+          category: plant.category,
+          quantity: 1,
+          price: session.amount_total / 100,
+          image: plant?.image,
+        }
+        const result = await ordersCollection.insertOne(orderInfo)
+        // update plant quantity
+        await plantsCollection.updateOne(
+          {
+            _id: new ObjectId(session.metadata.plantId),
+          },
+          { $inc: { quantity: -1 } }
+        )
+
+        return res.send({
+          transactionId: session.payment_intent,
+          orderId: result.insertedId,
+        })
+      }
+      res.send(
+        res.send({
+          transactionId: session.payment_intent,
+          orderId: order._id,
+        })
+      )
+    })
+
 
 
     
