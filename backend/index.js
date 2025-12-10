@@ -1,7 +1,9 @@
 require('dotenv').config()
 const express = require('express')
+
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const cors = require('cors')
-const { MongoClient, ServerApiVersion } = require('mongodb')
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 const admin = require('firebase-admin')
 const port = process.env.PORT || 3000
 const decoded = Buffer.from(process.env.FB_SERVICE_KEY, 'base64').toString(
@@ -17,9 +19,7 @@ const app = express()
 app.use(
   cors({
     origin: [
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'https://b12-m11-session.web.app',
+     process.env.CLIENT_DOMAIN
     ],
     credentials: true,
     optionSuccessStatus: 200,
@@ -69,6 +69,48 @@ async function run() {
       const result = await plantsCollection.find().toArray()
       res.send(result)
     })
+    //get all single plants from DB
+    app.get('/plants/:id', async(req, res)=> {
+      const id = req.params.id
+      const result = await plantsCollection.findOne({_id: new ObjectId(id)})
+      res.send(result)
+
+      
+    })
+
+
+   // Payment endpoints
+    app.post('/create-checkout-session', async (req, res) => {
+      const paymentInfo = req.body
+      console.log(paymentInfo)
+      const session = await stripe.checkout.sessions.create({
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: paymentInfo?.name,
+                description: paymentInfo?.description,
+                images: [paymentInfo.image],
+              },
+              unit_amount: paymentInfo?.price * 100,
+            },
+            quantity: paymentInfo?.quantity,
+          },
+        ],
+        customer_email: paymentInfo?.customer?.email,
+        mode: 'payment',
+        metadata: {
+          plantId: paymentInfo?.plantId,
+          customer: paymentInfo?.customer.email,
+        },
+        success_url: `${process.env.CLIENT_DOMAIN}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.CLIENT_DOMAIN}/plant/${paymentInfo?.plantId}`,
+      })
+      res.send({ url: session.url })
+    })
+
+    
 
 
     

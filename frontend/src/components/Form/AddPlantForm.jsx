@@ -77,6 +77,7 @@ const AddPlantForm = () => {
     } 
     catch (err){
       console.log(err);
+      
     }
   }
 
@@ -123,7 +124,7 @@ const AddPlantForm = () => {
                 className="w-full px-4 py-3 border-lime-300 focus:outline-lime-500 rounded-md bg-white"
                 name="category"
 
-                 {...register("name", {
+                 {...register("category", {
                   required: "Category is required",
                   
                 })}

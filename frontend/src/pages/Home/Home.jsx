@@ -4,6 +4,8 @@ const Home = () => {
   return (
     <div>
       <Plants />
+      
+      
       {/* More components */}
     </div>
   )
